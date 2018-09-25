@@ -1,0 +1,23 @@
+img {
+    width: 128px;
+}
+
+.img1 {
+    width: 300px;
+    border-color: black;
+    border-width: 1px;
+    border-style: inset;
+    padding: 12px;
+}
+
+.img2 {
+    width: 200px;
+    margin: 50px;
+    border: blueviolet;
+    border-style: double;
+    border-width: 12px;
+}
+
+h1 {
+    color: burlywood
+}
