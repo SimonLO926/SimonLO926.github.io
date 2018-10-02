@@ -1,0 +1,23 @@
+<style>table {
+    border-collapse: collapse
+}
+
+
+/* settings of the border of table  */
+
+td,
+th {
+    border: 1px solid black;
+    text-align: left;
+    padding: 8px
+}
+
+.tr1 {
+    background-color: lightslategray;
+}
+
+tr:nth-child(even) {
+    background-color: lightgray;
+}
+
+</style>
