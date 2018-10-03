@@ -2,6 +2,18 @@
     border-collapse: collapse
 }
 
+img {
+    width: 300px;
+    border-bottom: 2px;
+}
+
+.header {
+    font-size: 30px;
+    text-align: center;
+    background-color: black;
+    color: aliceblue;
+}
+
 
 /* settings of the border of table  */
 
