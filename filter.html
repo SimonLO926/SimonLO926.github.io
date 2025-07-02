@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Filter App</title>
+    <link rel="stylesheet" href="filter.css">
+</head>
+<body>
+    <h1>Image Filter Demo</h1>
+    <input type="file" id="imageInput" accept="image/*" multiple>
+    <label for="filterSelect">Choose filter:</label>
+    <select id="filterSelect">
+        <option value="none">None</option>
+        <option value="grayscale(100%)">Grayscale</option>
+        <option value="sepia(100%)">Sepia</option>
+        <option value="invert(100%)">Invert</option>
+        <option value="brightness(150%)">Brightness +50%</option>
+        <option value="contrast(150%)">Contrast +50%</option>
+        <option value="blur(5px)">Blur</option>
+    </select>
+    <div id="previewContainer"></div>
+
+    <script src="filter.js"></script>
+</body>
+</html>
