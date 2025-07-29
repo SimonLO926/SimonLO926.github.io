@@ -1,6 +1,29 @@
 const imageInput = document.getElementById('imageInput');
-const filterSelect = document.getElementById('filterSelect');
 const previewContainer = document.getElementById('previewContainer');
+const applyButton = document.getElementById('applyButton');
+const presetSelect = document.getElementById('preset');
+
+const controls = ['brightness', 'contrast', 'saturate', 'grayscale', 'sepia', 'hue', 'blur'];
+const inputs = {};
+controls.forEach(id => {
+    inputs[id] = document.getElementById(id);
+});
+
+const presets = {
+    vintage: { brightness: 120, contrast: 110, saturate: 140, grayscale: 20, sepia: 30, hue: 0, blur: 0 },
+    lomo: { brightness: 110, contrast: 90, saturate: 130, grayscale: 0, sepia: 0, hue: 0, blur: 1 },
+    clarity: { brightness: 105, contrast: 110, saturate: 105, grayscale: 0, sepia: 0, hue: 0, blur: 0 }
+};
+
+function getFilter() {
+    return `brightness(${inputs.brightness.value}% ) ` +
+           `contrast(${inputs.contrast.value}% ) ` +
+           `saturate(${inputs.saturate.value}% ) ` +
+           `grayscale(${inputs.grayscale.value}% ) ` +
+           `sepia(${inputs.sepia.value}% ) ` +
+           `hue-rotate(${inputs.hue.value}deg) ` +
+           `blur(${inputs.blur.value}px)`;
+}
 
 function applyFilterAndRender(file, filter) {
     const reader = new FileReader();
@@ -31,19 +54,40 @@ function applyFilterAndRender(file, filter) {
     reader.readAsDataURL(file);
 }
 
-imageInput.addEventListener('change', () => {
+function applyFilters() {
     previewContainer.innerHTML = '';
     const files = Array.from(imageInput.files);
-    const filterValue = filterSelect.value;
+    const filterValue = getFilter();
     files.forEach(file => applyFilterAndRender(file, filterValue));
+}
+
+imageInput.addEventListener('change', applyFilters);
+applyButton.addEventListener('click', applyFilters);
+
+controls.forEach(id => {
+    inputs[id].addEventListener('input', () => {
+        document.getElementById(id + 'Val').textContent = inputs[id].value;
+        applyFilters();
+    });
 });
 
-filterSelect.addEventListener('change', () => {
-    if (imageInput.files.length > 0) {
-        // Reapply filter to existing images
-        const files = Array.from(imageInput.files);
-        previewContainer.innerHTML = '';
-        const filterValue = filterSelect.value;
-        files.forEach(file => applyFilterAndRender(file, filterValue));
+function loadPreset(name) {
+    const preset = presets[name];
+    if (!preset) return;
+    controls.forEach(id => {
+        inputs[id].value = preset[id];
+        document.getElementById(id + 'Val').textContent = preset[id];
+    });
+    applyFilters();
+}
+
+presetSelect.addEventListener('change', () => {
+    if (presetSelect.value === 'custom') return;
+    loadPreset(presetSelect.value);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.M && M.FormSelect) {
+        M.FormSelect.init(presetSelect);
     }
 });
