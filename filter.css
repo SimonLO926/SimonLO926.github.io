@@ -1,0 +1,30 @@
+body {
+    font-family: "Roboto", Arial, sans-serif;
+    background: #fafafa;
+    padding: 20px;
+}
+
+#previewContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.preview {
+    padding: 10px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.preview canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.preview a {
+    display: inline-block;
+    margin-top: 8px;
+}
