@@ -3,16 +3,41 @@ const previewContainer = document.getElementById('previewContainer');
 const applyButton = document.getElementById('applyButton');
 const presetSelect = document.getElementById('preset');
 
-const controls = ['brightness', 'contrast', 'saturate', 'grayscale', 'sepia', 'hue', 'blur'];
+const controls = [
+    'brightness', 'contrast', 'saturate', 'grayscale', 'sepia',
+    'hue', 'blur', 'invert', 'opacity', 'temperature'
+];
 const inputs = {};
 controls.forEach(id => {
     inputs[id] = document.getElementById(id);
 });
 
 const presets = {
-    vintage: { brightness: 120, contrast: 110, saturate: 140, grayscale: 20, sepia: 30, hue: 0, blur: 0 },
-    lomo: { brightness: 110, contrast: 90, saturate: 130, grayscale: 0, sepia: 0, hue: 0, blur: 1 },
-    clarity: { brightness: 105, contrast: 110, saturate: 105, grayscale: 0, sepia: 0, hue: 0, blur: 0 }
+    vintage: {
+        brightness: 120, contrast: 110, saturate: 140,
+        grayscale: 20, sepia: 30, hue: 0, blur: 0,
+        invert: 0, opacity: 100, temperature: 20
+    },
+    lomo: {
+        brightness: 110, contrast: 90, saturate: 130,
+        grayscale: 0, sepia: 0, hue: 0, blur: 1,
+        invert: 0, opacity: 100, temperature: 0
+    },
+    clarity: {
+        brightness: 105, contrast: 110, saturate: 105,
+        grayscale: 0, sepia: 0, hue: 0, blur: 0,
+        invert: 0, opacity: 100, temperature: 0
+    },
+    warm: {
+        brightness: 105, contrast: 105, saturate: 120,
+        grayscale: 0, sepia: 10, hue: 0, blur: 0,
+        invert: 0, opacity: 100, temperature: 40
+    },
+    cool: {
+        brightness: 100, contrast: 110, saturate: 100,
+        grayscale: 0, sepia: 0, hue: 0, blur: 0,
+        invert: 0, opacity: 100, temperature: -40
+    }
 };
 
 function getFilter() {
@@ -22,10 +47,12 @@ function getFilter() {
            `grayscale(${inputs.grayscale.value}% ) ` +
            `sepia(${inputs.sepia.value}% ) ` +
            `hue-rotate(${inputs.hue.value}deg) ` +
-           `blur(${inputs.blur.value}px)`;
+           `blur(${inputs.blur.value}px) ` +
+           `invert(${inputs.invert.value}% ) ` +
+           `opacity(${inputs.opacity.value}% )`;
 }
 
-function applyFilterAndRender(file, filter) {
+function applyFilterAndRender(file, filter, temperature) {
     const reader = new FileReader();
     reader.onload = function (e) {
         const img = new Image();
@@ -36,6 +63,18 @@ function applyFilterAndRender(file, filter) {
             const ctx = canvas.getContext('2d');
             ctx.filter = filter;
             ctx.drawImage(img, 0, 0);
+
+            if (temperature !== 0) {
+                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imgData.data;
+                const rOff = temperature > 0 ? temperature : 0;
+                const bOff = temperature < 0 ? -temperature : 0;
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i] = Math.min(255, Math.max(0, data[i] + rOff));
+                    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + bOff));
+                }
+                ctx.putImageData(imgData, 0, 0);
+            }
 
             const preview = document.createElement('div');
             preview.className = 'preview';
@@ -58,7 +97,8 @@ function applyFilters() {
     previewContainer.innerHTML = '';
     const files = Array.from(imageInput.files);
     const filterValue = getFilter();
-    files.forEach(file => applyFilterAndRender(file, filterValue));
+    const tempValue = parseInt(inputs.temperature.value, 10) || 0;
+    files.forEach(file => applyFilterAndRender(file, filterValue, tempValue));
 }
 
 imageInput.addEventListener('change', applyFilters);
