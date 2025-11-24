@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TOKYO 2026 | 聖地巡禮</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root {
+            /* Light (Tokyo Day) */
+            --primary: #1D1D1F;
+            --bg: #F5F5F7;
+            --surface: #FFFFFF;
+            --surface-trans: rgba(255, 255, 255, 0.85);
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border: rgba(0, 0, 0, 0.06);
+            --accent: #007AFF;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.1);
+
+            /* Gradients */
+            --g-day1: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+            --g-day2: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            --g-day3: linear-gradient(135deg, #fccb90 0%, #d57eeb 100%);
+            --g-day4: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            --g-day5: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --g-day6: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --g-day7: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+
+            --alert-bg: #FFF4F4;
+            --alert-text: #E02424;
+            --success-bg: #F0FDF4;
+            --success-text: #15803D;
+        }
+
+        [data-theme="dark"] {
+            /* Cyberpunk Night */
+            --primary: #FFFFFF;
+            --bg: #000000;
+            --surface: #1C1C1E;
+            --surface-trans: rgba(28, 28, 30, 0.85);
+            --text-primary: #F5F5F7;
+            --text-secondary: #8E8E93;
+            --border: rgba(255, 255, 255, 0.15);
+            --accent: #0A84FF;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.7);
+
+            --g-day1: linear-gradient(135deg, #3B2667 0%, #BC78EC 100%);
+            --g-day2: linear-gradient(135deg, #F05F57 0%, #36096d 100%);
+            --g-day3: linear-gradient(135deg, #F2994A 0%, #F2C94C 100%);
+            --g-day4: linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%);
+            --g-day5: linear-gradient(135deg, #1A2980 0%, #26D0CE 100%);
+            --g-day6: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%);
+            --g-day7: linear-gradient(135deg, #373B44 0%, #4286f4 100%);
+
+            --alert-bg: rgba(224, 36, 36, 0.15);
+            --alert-text: #F87171;
+            --success-bg: rgba(21, 128, 61, 0.15);
+            --success-text: #4ADE80;
+        }
+
+        [data-theme="sakura"] {
+            /* Sakura Mode */
+            --primary: #881337;
+            --bg: #FFF1F2;
+            --surface: #FFFFFF;
+            --surface-trans: rgba(255, 255, 255, 0.9);
+            --text-primary: #881337;
+            --text-secondary: #BE123C;
+            --border: #FECDD3;
+            --accent: #FB7185;
+
+            --g-day1: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --g-day2: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            --g-day3: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+
+            --alert-bg: #FFF0F0;
+            --alert-text: #D32F2F;
+        }
+
+        [data-theme="lavender"] {
+            /* Lavender Mode */
+            --primary: #4C1D95;
+            --bg: #F3E8FF;
+            --surface: #FFFFFF;
+            --surface-trans: rgba(255, 255, 255, 0.9);
+            --text-primary: #5B21B6;
+            --text-secondary: #7C3AED;
+            --border: #DDD6FE;
+            --accent: #8B5CF6;
+
+            --g-day1: linear-gradient(135deg, #E9D5FF 0%, #C084FC 100%);
+            --g-day2: linear-gradient(135deg, #D8B4FE 0%, #A855F7 100%);
+            --g-day3: linear-gradient(135deg, #C4B5FD 0%, #8B5CF6 100%);
+
+            --alert-bg: #FAF5FF;
+            --alert-text: #6D28D9;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: background-color 0.4s ease;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: var(--surface-trans);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .brand h1 {
+            font-size: 18px;
+            font-weight: 900;
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .brand span {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .theme-wrapper {
+            position: relative;
+            z-index: 200;
+        }
+
+        .theme-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+            z-index: 201;
+        }
+
+        .theme-btn:active {
+            transform: scale(0.9);
+        }
+
+        .theme-menu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: var(--shadow-hover);
+            z-index: 200;
+        }
+
+        .theme-menu.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, 25px) scale(1);
+            /* Drop down */
+        }
+
+        .theme-option {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-option.hovered {
+            transform: scale(1.25);
+            border-color: var(--accent);
+            z-index: 202;
+        }
+
+        .nav-segment {
+            background: rgba(120, 120, 128, 0.12);
+            padding: 2px;
+            border-radius: 8px;
+            display: flex;
+        }
+
+        .nav-btn {
+            border: none;
+            background: transparent;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn.active {
+            background: var(--surface);
+            color: var(--text-primary);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        /* --- VIEW CONTAINERS --- */
+        .view-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transform-origin: left center;
+            backface-visibility: hidden;
+        }
+
+        .view-container.active-view {
+            display: flex;
+            opacity: 1;
+            animation: pageFlipIn 0.6s forwards;
+        }
+
+        @keyframes pageFlipIn {
+            from {
+                opacity: 0;
+                transform: perspective(1000px) rotateY(-10deg) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: perspective(1000px) rotateY(0) scale(1);
+            }
+        }
+
+        /* --- VIEW 1: MODERN BENTO GRID (OVERVIEW) --- */
+        #view-overview {
+            padding: 24px;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        .bento-card {
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            position: relative;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bento-card:hover {
+            transform: scale(1.03);
+            box-shadow: var(--shadow-hover);
+            z-index: 10;
+        }
+
+        .bento-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .bento-card:hover .bento-bg {
+            transform: scale(1.1);
+        }
+
+        .bento-gradient-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            opacity: 0.85;
+            transition: opacity 0.3s;
+            mix-blend-mode: hard-light;
+        }
+
+        .bento-card:hover .bento-gradient-overlay {
+            opacity: 0.7;
+        }
+
+        .bento-icon-bg {
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            font-size: 140px;
+            color: #fff;
+            opacity: 0.25;
+            transform: rotate(-15deg);
+            pointer-events: none;
+            z-index: 1;
+            transition: transform 0.4s ease;
+        }
+
+        .bento-card:hover .bento-icon-bg {
+            transform: rotate(-5deg) scale(1.1);
+            opacity: 0.3;
+        }
+
+        .bento-content {
+            position: relative;
+            z-index: 2;
+            padding: 24px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .bento-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .day-pill {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            padding: 6px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .bento-info h3 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+
+        .bento-info p {
+            margin: 0;
+            font-size: 13px;
+            opacity: 0.95;
+            font-weight: 500;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* --- VIEW 2: SPLIT DETAIL --- */
+        #view-detail {
+            flex-direction: row;
+        }
+
+        .detail-list-panel {
+            width: 420px;
+            background: var(--surface);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            z-index: 10;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.05);
+        }
+
+        .date-scroller {
+            padding: 12px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            flex-shrink: 0;
+            scrollbar-width: none;
+        }
+
+        .date-scroller::-webkit-scrollbar {
+            display: none;
+        }
+
+        .date-chip {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 58px;
+            border-radius: 12px;
+            background: var(--bg);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .date-chip.active {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .date-chip span:first-child {
+            font-size: 10px;
+            font-weight: 700;
+            opacity: 0.8;
+            margin-bottom: 2px;
+        }
+
+        .date-chip span:last-child {
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .timeline-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 20px;
+            scroll-behavior: smooth;
+        }
+
+        .day-header-block {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .day-header-block h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .day-header-block p {
+            margin: 4px 0 0 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 36px;
+            bottom: -30px;
+            width: 2px;
+            background: var(--border);
+            z-index: 0;
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .time-col {
+            min-width: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+            position: relative;
+        }
+
+        .time-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            z-index: 2;
+        }
+
+        .icon-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            z-index: 2;
+            position: relative;
+        }
+
+        .type-transport .icon-dot {
+            color: #007AFF;
+            border-color: #007AFF;
+            background: #F0F9FF;
+        }
+
+        .type-activity .icon-dot {
+            color: #FF2D55;
+            border-color: #FF2D55;
+            background: #FFF0F5;
+        }
+
+        .type-hotel .icon-dot {
+            color: #34C759;
+            border-color: #34C759;
+            background: #F0FFF4;
+        }
+
+        .type-poke .icon-dot {
+            color: #FF9500;
+            border-color: #FFCC00;
+            background: #FFFBEB;
+        }
+
+        [data-theme="dark"] .type-transport .icon-dot {
+            background: rgba(0, 122, 255, 0.2);
+        }
+
+        [data-theme="dark"] .type-activity .icon-dot {
+            background: rgba(255, 45, 85, 0.2);
+        }
+
+        [data-theme="dark"] .type-hotel .icon-dot {
+            background: rgba(52, 199, 89, 0.2);
+        }
+
+        [data-theme="dark"] .type-poke .icon-dot {
+            background: rgba(255, 204, 0, 0.2);
+        }
+
+        /* Route Line Container */
+        .route-line-container {
+            position: absolute;
+            top: 45px;
+            /* Start below the icon */
+            bottom: -45px;
+            /* Extend to the next icon */
+            width: 40px;
+            /* Wide hit area */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+            /* Behind icon but clickable */
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .route-line-container:hover .route-line-visible {
+            background: var(--accent);
+            width: 4px;
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        .route-line-visible {
+            width: 2px;
+            background: var(--border);
+            height: 100%;
+            transition: all 0.2s;
+            border-radius: 2px;
+        }
+
+        .timeline-item:hover .icon-dot {
+            transform: scale(1.15);
+        }
+
+        .event-card {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px;
+            transition: all 0.2s;
+        }
+
+        .event-card:hover {
+            background: var(--bg);
+            border-color: var(--accent);
+            transform: translateX(4px);
+        }
+
+        .event-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .event-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .alert-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+            padding: 4px 10px;
+            background: #FEF2F2;
+            color: #EF4444;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 6px;
+        }
+
+        [data-theme="dark"] .alert-tag {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 6px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .map-container {
+            flex: 1;
+            background: var(--bg);
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* --- VIEW 3: CHECKLIST & NOTES (NEW) --- */
+        #view-checklist {
+            padding: 24px;
+            overflow-y: auto;
+            width: 100%;
+            background: var(--bg);
+        }
+
+        .checklist-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Action Grid for Pre-purchase */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .action-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .check-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: var(--bg);
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .check-circle.checked {
+            background: var(--accent);
+            border-color: var(--accent);
+            position: relative;
+        }
+
+        .check-circle.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Strategy Card */
+        .strategy-card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 32px;
+            border: 1px solid var(--accent);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .strategy-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: var(--accent);
+        }
+
+        .strategy-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .strategy-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .option-box {
+            background: var(--bg);
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+
+        .option-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .option-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Daily Cheat Sheet */
+        .cheat-sheet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .cheat-item {
+            background: var(--surface);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            display: flex;
+            gap: 16px;
+        }
+
+        .cheat-day {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--accent);
+            min-width: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        .cheat-content h4 {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .cheat-content ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .cheat-content li {
+            margin-bottom: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            #view-detail {
+                flex-direction: column;
+            }
+
+            .detail-list-panel {
+                width: 100%;
+                height: 55%;
+                order: 2;
+                border-right: none;
+                border-top: 1px solid var(--border);
+            }
+
+            .map-container {
+                width: 100%;
+                height: 45%;
+                order: 1;
+            }
+
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .date-scroller {
+                padding: 12px;
+            }
+
+            .nav-btn {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="brand">
+            <h1><i class="fas fa-torii-gate" style="color:var(--accent); margin-right:8px;"></i>TOKYO 2026</h1>
+            <span>聖地巡禮 & 河口湖</span>
+        </div>
+        <div class="controls">
+            <div class="theme-wrapper" id="theme-wrapper">
+                <button class="theme-btn" id="theme-btn" title="切換主題 (長按選擇)">
+                    <i class="fas fa-adjust"></i>
+                </button>
+                <div class="theme-menu" id="theme-menu">
+                    <div class="theme-option" data-theme="light" style="background: #f5f5f7; color:#1d1d1f"><i
+                            class="fas fa-sun"></i></div>
+                    <div class="theme-option" data-theme="dark" style="background: #000; color:#fff"><i
+                            class="fas fa-moon"></i></div>
+                    <div class="theme-option" data-theme="sakura" style="background: #FFF1F2; color:#881337"><i
+                            class="fas fa-fan"></i></div>
+                    <div class="theme-option" data-theme="lavender" style="background: #F3E8FF; color:#5B21B6"><i
+                            class="fas fa-magic"></i></div>
+                </div>
+            </div>
+            <div class="nav-segment">
+                <button class="nav-btn active" onclick="switchView('overview')" id="btn-overview">總覽</button>
+                <button class="nav-btn" onclick="switchView('detail')" id="btn-detail">行程</button>
+                <button class="nav-btn" onclick="switchView('checklist')" id="btn-checklist">筆記</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- VIEW 1: BENTO GRID OVERVIEW -->
+    <div id="view-overview" class="view-container active-view">
+        <div class="bento-grid" id="bento-container">
+            <!-- JS Injected -->
+        </div>
+    </div>
+
+    <!-- VIEW 2: SPLIT DETAIL -->
+    <div id="view-detail" class="view-container">
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+        <div class="detail-list-panel">
+            <div class="date-scroller" id="date-tabs">
+                <!-- JS Injected -->
+            </div>
+            <div class="timeline-wrapper" id="timeline-content">
+                <!-- JS Injected -->
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 3: CHECKLIST & NOTES (NEW) -->
+    <div id="view-checklist" class="view-container">
+        <div class="checklist-container" id="checklist-content">
+            <!-- JS Injected -->
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // --- Data Source ---
+        const itineraryData = [
+            {
+                day: "Day 1",
+                image: 'assets/day1.png',
+                date: "3/6",
+                fullDate: "3月6日 (週五)",
+                title: "出發 & 抵達東京",
+                subtitle: "澳門出發，經香港機場直飛東京，入住二次元民宿。",
+                gradient: "var(--g-day1)",
+                icon: "fa-plane-arrival",
+                locations: [
+                    { lat: 22.1987, lng: 113.5439, title: "澳門" },
+                    { lat: 22.3080, lng: 113.9185, title: "香港國際機場" },
+                    { lat: 35.7719, lng: 140.3929, title: "成田機場" },
+                    { lat: 35.6909, lng: 139.7002, title: "新宿站" },
+                    { lat: 35.6980, lng: 139.6482, title: "Twin Palace 新高円寺" }
+                ],
+                events: [
+                    { time: "09:00", title: "澳門 -> 香港機場", type: "transport", icon: "fa-bus", desc: "搭乘港珠澳大橋金巴或噴射飛航前往香港機場。", to: "澳門" },
+                    { time: "14:00", title: "香港起飛", type: "transport", icon: "fa-plane-departure", desc: "飛往東京成田 (CX/UO/JL)。", to: "香港國際機場" },
+                    { time: "19:05", title: "抵達東京成田 (NRT)", type: "transport", icon: "fa-plane-arrival", desc: "辦理入境手續，預計 20:30 出關。", to: "成田機場" },
+                    { time: "20:45", title: "N'EX 成田特快", type: "transport", icon: "fa-train", desc: "直達新宿站 (約 80 分鐘)。", to: "新宿站" },
+                    { time: "22:15", title: "轉乘 & 晚餐", type: "transport", icon: "fa-utensils", desc: "新宿轉乘丸之內線至新高円寺。晚餐：松屋或回憶橫丁。", to: "新宿站" },
+                    { time: "23:00", title: "入住 Twin Palace", type: "hotel", icon: "fa-bed", desc: "地址：杉並区梅里 2-18-7。", to: "Twin Palace 新高円寺" }
+                ]
+            },
+            {
+                day: "Day 2",
+                image: 'assets/day2.png',
+                date: "3/7",
+                fullDate: "3月7日 (週六)",
+                title: "秋葉原 & 池袋",
+                subtitle: "二次元極限購物：秋葉原淘寶 & 池袋世界最大扭蛋店。",
+                gradient: "var(--g-day2)",
+                icon: "fa-ghost",
+                locations: [
+                    { lat: 35.6983, lng: 139.7712, title: "秋葉原" },
+                    { lat: 35.7295, lng: 139.7109, title: "池袋 Animate" },
+                    { lat: 35.7289, lng: 139.7192, title: "池袋 Sunshine City" }
+                ],
+                events: [
+                    { time: "09:30", title: "前往秋葉原", type: "transport", icon: "fa-subway", desc: "新高円寺 -> 御茶之水 -> 秋葉原。", to: "秋葉原" },
+                    { time: "10:00", title: "秋葉原 聖地巡禮", type: "activity", icon: "fa-ghost", desc: "Radio 會館、Mandarake Complex、駿河屋。", to: "秋葉原" },
+                    { time: "14:30", title: "移動至池袋", type: "transport", icon: "fa-train", desc: "JR 山手線直達池袋 (20分鐘)。", to: "池袋 Animate" },
+                    { time: "15:00", title: "池袋 Sunshine City", type: "activity", icon: "fa-store", desc: "【2F】Pokémon Center Mega Tokyo<br>【3F】世界最大扭蛋百貨 (3000+台機台)", to: "池袋 Sunshine City" },
+                    { time: "20:00", title: "返回民宿", type: "transport", icon: "fa-house", desc: "池袋搭乘丸之內線直達新高円寺。", to: "Twin Palace 新高円寺" }
+                ]
+            },
+            {
+                day: "Day 3",
+                image: 'assets/day3.png',
+                date: "3/8",
+                fullDate: "3月8日 (週日)",
+                title: "PokePark & 澀谷",
+                subtitle: "讀賣樂園寶可夢專區體驗 & 澀谷潮流夜。",
+                gradient: "var(--g-day3)",
+                icon: "fa-bolt",
+                locations: [
+                    { lat: 35.6242, lng: 139.5172, title: "讀賣樂園 (PokePark)" },
+                    { lat: 35.6620, lng: 139.6987, title: "澀谷 PARCO" }
+                ],
+                events: [
+                    { time: "09:30", title: "前往讀賣樂園", type: "transport", icon: "fa-train", desc: "新宿轉京王線 -> 京王讀賣樂園站 -> 纜車。", to: "讀賣樂園 (PokePark)" },
+                    { time: "11:00", title: "讀賣樂園", type: "activity", icon: "fa-ticket", desc: "使用【精英訓練家套票】入園。自費遊玩雲霄飛車。", to: "讀賣樂園 (PokePark)" },
+                    { time: "15:15", title: "PokePark 表演", type: "poke", icon: "fa-bolt", desc: "精英票專屬預約席、皮卡丘合照。請準時報到！", to: "讀賣樂園 (PokePark)" },
+                    { time: "18:30", title: "澀谷 PARCO", type: "activity", icon: "fa-bag-shopping", desc: "6F：Nintendo Tokyo, Pokémon Center Shibuya, Jump Shop。", to: "澀谷 PARCO" }
+                ]
+            },
+            {
+                day: "Day 4",
+                image: 'assets/day4.png',
+                date: "3/9",
+                fullDate: "3月9日 (週一)",
+                title: "中野百老匯 & 寄件",
+                subtitle: "中野深度宅挖寶 & 行李寄送至成田任務。",
+                gradient: "var(--g-day4)",
+                icon: "fa-robot",
+                locations: [
+                    { lat: 35.7090, lng: 139.6657, title: "中野百老匯" },
+                    { lat: 35.6909, lng: 139.7002, title: "新宿站" }
+                ],
+                events: [
+                    { time: "11:00", title: "前往中野", type: "transport", icon: "fa-bus", desc: "睡飽飽。搭公車或步行至中野。", to: "中野百老匯" },
+                    { time: "12:00", title: "中野百老匯", type: "activity", icon: "fa-robot", desc: "Mandarake 總店、絕版動漫、賽璐璐畫。深度挖寶。", to: "中野百老匯" },
+                    { time: "16:00", title: "新宿補貨 & 寄件", type: "transport", icon: "fa-suitcase", desc: "逛 Bic Camera。★ 重要：去超商用黑貓將大行李寄往成田飯店。", to: "新宿站" }
+                ]
+            },
+            {
+                day: "Day 5",
+                image: 'assets/day5.png',
+                date: "3/10",
+                fullDate: "3月10日 (週二)",
+                title: "河口湖 & 淺間神社",
+                subtitle: "富士山河口湖巡禮，參拜千年淺間神社。",
+                gradient: "var(--g-day5)",
+                icon: "fa-mountain",
+                locations: [
+                    { lat: 35.4982, lng: 138.7686, title: "河口湖站" },
+                    { lat: 35.5317, lng: 138.7714, title: "河口淺間神社" },
+                    { lat: 35.5042, lng: 138.7725, title: "天上山公園" },
+                    { lat: 35.5224, lng: 138.7616, title: "音樂森林 / 餺飥不動" },
+                    { lat: 35.4849, lng: 138.7793, title: "MYSTAYS 富士山展望溫泉酒店" }
+                ],
+                events: [
+                    { time: "08:30", title: "前往河口湖", type: "transport", icon: "fa-bus", desc: "Busta 新宿搭高速巴士 (需預約)。車程約 1.5 小時。", to: "河口湖站" },
+                    { time: "11:30", title: "河口湖周遊", type: "activity", icon: "fa-camera", desc: "天上山纜車 -> 餺飥不動午餐 -> 音樂森林美術館。", to: "音樂森林 / 餺飥不動" },
+                    { time: "15:00", title: "河口淺間神社", type: "activity", icon: "fa-torii-gate", desc: "參拜七本杉千年神木。視體力前往後山的天空鳥居。", to: "河口淺間神社" },
+                    { time: "17:30", title: "入住 Mystays", type: "hotel", icon: "fa-hot-tub-person", desc: "位於富士急樂園站附近。享受溫泉。", to: "MYSTAYS 富士山展望溫泉酒店" }
+                ]
+            },
+            {
+                day: "Day 6",
+                image: 'assets/day6.png',
+                date: "3/11",
+                fullDate: "3月11日 (週三)",
+                title: "富士吉田 & Outlet",
+                subtitle: "富士吉田街拍，大移動至成田 Outlet。",
+                gradient: "var(--g-day6)",
+                icon: "fa-camera-retro",
+                locations: [
+                    { lat: 35.4912, lng: 138.8039, title: "本町二丁目商店街" },
+                    { lat: 35.4862, lng: 138.7967, title: "金鳥居" },
+                    { lat: 35.7132, lng: 140.2940, title: "酒酒井 Premium Outlets" },
+                    { lat: 35.7767, lng: 140.3144, title: "京成成田站" }
+                ],
+                events: [
+                    { time: "08:00", title: "晨間攝影", type: "activity", icon: "fa-camera-retro", desc: "步行至「本町二丁目」和「金鳥居」拍富士山街景。", to: "本町二丁目商店街" },
+                    { time: "10:30", title: "移動至成田", type: "transport", icon: "fa-bus", desc: "富士山站搭巴士 -> 東京站 -> 轉 JR 快速 -> 京成成田站。", to: "京成成田站" },
+                    { time: "15:00", title: "入住 & 領行李", type: "hotel", icon: "fa-suitcase", desc: "入住成田飯店，領取寄送的行李。", to: "京成成田站" },
+                    { time: "15:30", title: "酒酒井 Outlet", type: "activity", icon: "fa-bag-shopping", desc: "車站搭巴士直達。最後衝刺購物。", to: "酒酒井 Premium Outlets" }
+                ]
+            },
+            {
+                day: "Day 7",
+                image: 'assets/day7.png',
+                date: "3/12",
+                fullDate: "3月12日 (週四)",
+                title: "滿載歸途",
+                subtitle: "最後補貨，搭機返回香港/澳門。",
+                gradient: "var(--g-day7)",
+                icon: "fa-plane",
+                locations: [
+                    { lat: 35.7915, lng: 140.3230, title: "AEON MALL 成田" },
+                    { lat: 35.7719, lng: 140.3929, title: "成田機場" }
+                ],
+                events: [
+                    { time: "10:00", title: "AEON MALL 成田", type: "activity", icon: "fa-cart-shopping", desc: "搭接駁巴士前往。超市、無印、大創最後掃貨。", to: "AEON MALL 成田" },
+                    { time: "13:00", title: "前往機場", type: "transport", icon: "fa-bus", desc: "搭巴士直達機場 (20分鐘)。", to: "成田機場" },
+                    { time: "15:25", title: "飛往香港", type: "transport", icon: "fa-plane-departure", desc: "平安回家！", to: "成田機場" }
+                ]
+            }
+        ];
+
+        // --- Checklist Data (New) ---
+        const checklistData = {
+            actions: [
+                { text: "購買 PokePark 精英訓練家套票", done: true },
+                { text: "預訂 3/10 新宿->河口湖 巴士票 (提前1個月)", done: false },
+                { text: "預訂 3/11 河口湖->東京 巴士票", done: false },
+                { text: "購買 Sim 卡 / 申請漫遊", done: false },
+                { text: "iPhone 加入 Suica (西瓜卡)", done: false }
+            ],
+            strategy: {
+                title: "🧳 Day 5 行李戰略 (三選一)",
+                options: [
+                    {
+                        title: "方案 A：黑貓宅急便 (最推薦)",
+                        desc: "Day 4 晚上或 Day 5 早上，在新高円寺附近的超商 (7-11/全家) 寄送。指定 Day 6 入住的成田飯店收件。優點：全程空手最輕鬆。"
+                    },
+                    {
+                        title: "方案 B：河口湖寄存 & 自提",
+                        desc: "Day 5 攜帶行李搭巴士，抵達後寄存在河口湖站 (置物櫃/人工寄存)。遊玩後回車站領取，再自行帶去飯店 (Mystays)。缺點：移動較累。"
+                    },
+                    {
+                        title: "方案 C：新宿站置物櫃",
+                        desc: "Day 5 早上將大行李鎖在新宿站 Coin Locker。Day 6 回程必須搭巴士回「新宿」領取，再搭 N'EX 去成田。注意：大型櫃位早上競爭激烈，且回程路線受限。"
+                    }
+                ]
+            },
+            daily: [
+                { day: "Day 1", text: "20:45 末班 N'EX 注意時間。晚餐在新高円寺解決較保險。" },
+                { day: "Day 2", text: "池袋太陽城扭蛋店在 3F，寶可夢中心在 2F。小心迷路。" },
+                { day: "Day 3", text: "PokePark 表演 15:15 開始，務必 15:00 前報到。精英票含設施優先權。" },
+                { day: "Day 4", text: "中野百老匯 12:00 店家才全開，早上不用太早去。晚上記得寄行李。" },
+                { day: "Day 5", text: "河口湖紅線巴士人多，預留排隊時間。天空鳥居建議搭計程車。" },
+                { day: "Day 6", text: "清晨 8:00 去本町二丁目拍照人最少。晚上酒酒井 Outlet 營業至 20:00。" }
+            ]
+        };
+
+        // --- App Logic ---
+        let map;
+        let markers = [];
+        let isMapInitialized = false;
+        let currentTheme = 'light';
+
+        function init() {
+            renderBento();
+            renderDateTabs();
+            renderChecklist(); // New
+            loadDayDetail(0);
+        }
+
+        // Toggle Checkbox
+        window.toggleCheck = function (el) {
+            el.classList.toggle('checked');
+        }
+
+        // Render Checklist View
+        function renderChecklist() {
+            const container = document.getElementById('checklist-content');
+
+            // Actions
+            let actionsHtml = checklistData.actions.map(item => `
+            <div class="action-card">
+                <div class="check-circle ${item.done ? 'checked' : ''}" onclick="toggleCheck(this)"></div>
+                <span>${item.text}</span>
+            </div>
+        `).join('');
+
+            // Strategy
+            let strategyHtml = `
+            <div class="strategy-card">
+                <div class="strategy-header"><i class="fas fa-suitcase-rolling" style="font-size:20px; color:var(--accent)"></i> <span class="strategy-title">${checklistData.strategy.title}</span></div>
+                ${checklistData.strategy.options.map(opt => `
+                    <div class="option-box">
+                        <div class="option-title">${opt.title}</div>
+                        <div class="option-desc">${opt.desc}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+            // Daily Cheat Sheet
+            let dailyHtml = checklistData.daily.map(item => `
+            <div class="cheat-item">
+                <div class="cheat-day">${item.day}</div>
+                <div class="cheat-content">
+                    <h4>重點筆記</h4>
+                    <ul><li>${item.text}</li></ul>
+                </div>
+            </div>
+        `).join('');
+
+            container.innerHTML = `
+            <div class="section-title"><i class="fas fa-clipboard-check"></i> 行前準備 & 購票</div>
+            <div class="action-grid">${actionsHtml}</div>
+            
+            ${strategyHtml}
+            
+            <div class="section-title"><i class="fas fa-calendar-check"></i> 每日避雷指南</div>
+            <div class="cheat-sheet-list">${dailyHtml}</div>
+        `;
+        }
+
+        // Theme Toggle
+        window.toggleTheme = function () {
+            const body = document.body;
+            if (currentTheme === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                currentTheme = 'dark';
+            } else if (currentTheme === 'dark') {
+                body.setAttribute('data-theme', 'sakura');
+                currentTheme = 'sakura';
+            } else if (currentTheme === 'sakura') {
+                body.setAttribute('data-theme', 'lavender');
+                currentTheme = 'lavender';
+            } else {
+                body.removeAttribute('data-theme');
+                currentTheme = 'light';
+            }
+
+            if (map) {
+                let tileUrl = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+                if (currentTheme === 'dark') tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+
+                map.eachLayer(function (layer) { map.removeLayer(layer); });
+                L.tileLayer(tileUrl, { attribution: '&copy; CARTO', subdomains: 'abcd', maxZoom: 19 }).addTo(map);
+
+                const currentDayIndex = document.querySelector('.date-chip.active')?.id.split('-')[1] || 0;
+                updateMap(itineraryData[currentDayIndex].locations);
+            }
+        }
+
+        // Switch Views
+        window.switchView = function (viewName) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${viewName}`).classList.add('active');
+
+            document.querySelectorAll('.view-container').forEach(div => div.classList.remove('active-view'));
+            document.getElementById(`view-${viewName}`).classList.add('active-view');
+
+            if (viewName === 'detail') {
+                setTimeout(() => {
+                    if (!isMapInitialized) {
+                        initMap();
+                        isMapInitialized = true;
+                    }
+                    map.invalidateSize();
+                    // Ensure current day is loaded
+                    const activeChip = document.querySelector('.date-chip.active');
+                    if (!activeChip) loadDayDetail(0);
+                }, 100);
+            }
+        }
+
+        // Render Overview (Bento Grid)
+        function renderBento() {
+            const container = document.getElementById('bento-container');
+            container.innerHTML = itineraryData.map((day, index) => `
+            <div class="bento-card" onclick="switchView('detail'); setTimeout(() => loadDayDetail(${index}), 150);">
+                <div class="bento-bg" style="background-image: url('${day.image}')"></div>
+                <div class="bento-gradient-overlay" style="background: ${day.gradient}"></div>
+                <i class="fas ${day.icon} bento-icon-bg"></i>
+                <div class="bento-content">
+                    <div class="bento-top">
+                        <div class="day-pill">${day.day}</div>
+                    </div>
+                    <div class="bento-info">
+                        <h3>${day.title}</h3>
+                        <p>${day.subtitle}</p>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        }
+
+        // Render Date Scroller
+        function renderDateTabs() {
+            const container = document.getElementById('date-tabs');
+            container.innerHTML = itineraryData.map((day, index) => `
+            <div class="date-chip" onclick="loadDayDetail(${index})" id="tab-${index}">
+                <span>${day.day}</span>
+                <span>${day.date.split('/')[1]}</span>
+            </div>
+        `).join('');
+        }
+
+        // Load Detail Content
+        window.loadDayDetail = function (index) {
+            document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+            document.getElementById(`tab-${index}`).classList.add('active');
+            document.getElementById(`tab-${index}`).scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+            const day = itineraryData[index];
+            const timeline = document.getElementById('timeline-content');
+
+            // Helper to find location coordinates
+            const findLoc = (name) => {
+                return day.locations.find(l => l.title === name || name.includes(l.title) || l.title.includes(name));
+            };
+
+            timeline.innerHTML = `
+            <div class="day-header-block">
+                <h2>${day.title}</h2>
+                <p><i class="far fa-calendar-alt"></i> ${day.fullDate} · ${day.subtitle}</p>
+            </div>
+            ${day.events.map((evt, i) => {
+                let warningHtml = evt.warning ? `<div class="alert-tag"><i class="fas fa-exclamation-circle"></i> ${evt.warning}</div>` : '';
+                const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evt.to)}`;
+
+                let badgeClass = '';
+                if (evt.type === 'transport') badgeClass = 'type-transport';
+                if (evt.type === 'activity') badgeClass = 'type-activity';
+                if (evt.type === 'hotel') badgeClass = 'type-hotel';
+                if (evt.type === 'poke') badgeClass = 'type-poke';
+
+                // Route Logic
+                let routeHtml = '';
+                if (i < day.events.length - 1) {
+                    const nextEvt = day.events[i + 1];
+                    const fromLoc = findLoc(evt.to);
+                    const toLoc = findLoc(nextEvt.to);
+
+                    if (fromLoc && toLoc) {
+                        routeHtml = `
+                        <div class="route-line-container" onclick="event.stopPropagation(); showRoute(${fromLoc.lat}, ${fromLoc.lng}, ${toLoc.lat}, ${toLoc.lng})" title="點擊查看路徑">
+                            <div class="route-line-visible"></div>
+                        </div>`;
+                    } else {
+                        // Fallback if location not found, just show line
+                        routeHtml = `
+                        <div class="route-line-container">
+                            <div class="route-line-visible"></div>
+                        </div>`;
+                    }
+                }
+
+                return `
+                <div class="timeline-item ${badgeClass}" onclick="highlightLocation('${evt.to}')" style="z-index: ${day.events.length - i};">
+                    <div class="time-col">
+                        ${routeHtml}
+                        <span class="time-text">${evt.time}</span>
+                        <div class="icon-dot"><i class="fas ${evt.icon}"></i></div>
+                    </div>
+                    <div class="event-card">
+                        <div class="event-title">${evt.title}</div>
+                        <div class="event-desc">${evt.desc}</div>
+                        ${warningHtml}
+                        <a href="${mapLink}" target="_blank" class="nav-link" onclick="event.stopPropagation()">
+                            <i class="fas fa-location-arrow"></i> 導航
+                        </a>
+                    </div>
+                </div>
+                `;
+            }).join('')}
+        `;
+
+            updateMap(day.locations);
+        }
+
+        // Show Route Function
+        // Show Route Function
+        let routeLine = null;
+        window.showRoute = function (lat1, lng1, lat2, lng2) {
+            console.log('showRoute called:', lat1, lng1, lat2, lng2);
+
+            if (!map) {
+                console.error('Map not initialized');
+                return;
+            }
+
+            // Ensure numbers
+            lat1 = parseFloat(lat1);
+            lng1 = parseFloat(lng1);
+            lat2 = parseFloat(lat2);
+            lng2 = parseFloat(lng2);
+
+            if (isNaN(lat1) || isNaN(lng1) || isNaN(lat2) || isNaN(lng2)) {
+                console.error('Invalid coordinates');
+                return;
+            }
+
+            // Remove existing route line
+            if (routeLine) {
+                map.removeLayer(routeLine);
+            }
+
+            // Get color from CSS variable (check body for dark mode)
+            let accentColor = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+            if (!accentColor) accentColor = '#007AFF'; // Fallback
+
+            // 1. Draw straight line immediately (as placeholder/fallback)
+            const straightLatLngs = [[lat1, lng1], [lat2, lng2]];
+            routeLine = L.polyline(straightLatLngs, {
+                color: accentColor,
+                weight: 6,
+                opacity: 0.5,
+                dashArray: '10, 10',
+                lineCap: 'round'
+            }).addTo(map);
+
+            map.flyToBounds(straightLatLngs, { padding: [50, 50], duration: 1.5 });
+
+            // 2. Fetch real route from OSRM (Open Source Routing Machine)
+            // Using 'driving' profile as a proxy for general transport paths
+            const url = `https://router.project-osrm.org/route/v1/driving/${lng1},${lat1};${lng2},${lat2}?overview=full&geometries=geojson`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                        // Convert GeoJSON [lng, lat] to Leaflet [lat, lng]
+                        const coordinates = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+
+                        if (routeLine) map.removeLayer(routeLine);
+
+                        routeLine = L.polyline(coordinates, {
+                            color: accentColor,
+                            weight: 6,
+                            opacity: 0.9,
+                            lineCap: 'round'
+                        }).addTo(map);
+
+                        // Adjust view to fit the real path
+                        map.flyToBounds(coordinates, { padding: [50, 50], duration: 1.5 });
+                    }
+                })
+                .catch(err => {
+                    console.warn('OSRM Routing failed, keeping straight line:', err);
+                });
+        }
+
+        // Map Functions
+        function initMap() {
+            map = L.map('map', { zoomControl: false }).setView([35.6909, 139.7002], 11);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+        }
+
+        function updateMap(locations) {
+            if (!map) return;
+
+            // Clear markers
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            if (!locations || locations.length === 0) return;
+
+            const group = new L.featureGroup();
+
+            const customIcon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="background-color: var(--accent); width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+                iconSize: [14, 14],
+                iconAnchor: [7, 7],
+                popupAnchor: [0, -10]
+            });
+
+            locations.forEach(loc => {
+                const marker = L.marker([loc.lat, loc.lng], { icon: customIcon })
+                    .bindPopup(`<b style="font-family:sans-serif">${loc.title}</b>`)
+                    .addTo(map);
+                marker.options.title = loc.title;
+                markers.push(marker);
+                group.addLayer(marker);
+            });
+
+            map.fitBounds(group.getBounds(), { padding: [50, 50], maxZoom: 14 });
+        }
+
+        // Highlight Location Logic
+        window.highlightLocation = function (targetName) {
+            // Clear route line if exists
+            if (routeLine && map) {
+                map.removeLayer(routeLine);
+                routeLine = null;
+            }
+
+            if (!map || markers.length === 0) return;
+
+            const found = markers.find(m =>
+                m.options.title === targetName ||
+                m.options.title.includes(targetName) ||
+                targetName.includes(m.options.title)
+            );
+
+            if (found) {
+                map.flyTo(found.getLatLng(), 16, { duration: 1.2 });
+                setTimeout(() => { found.openPopup(); }, 1200);
+
+                const originalIcon = found.getIcon();
+                const highlightIcon = L.divIcon({
+                    className: 'custom-marker-highlight',
+                    html: `<div style="background-color: #FF3B30; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 4px rgba(255, 59, 48, 0.3);"></div>`,
+                    iconSize: [18, 18],
+                    iconAnchor: [9, 9],
+                    popupAnchor: [0, -12]
+                });
+
+                found.setIcon(highlightIcon);
+                setTimeout(() => { found.setIcon(originalIcon); }, 3000);
+            }
+        }
+
+        // Start
+        init();
+
+        // Theme Long Press Logic
+        const themeBtn = document.getElementById('theme-btn');
+        const themeMenu = document.getElementById('theme-menu');
+        const themeOptions = document.querySelectorAll('.theme-option');
+        let pressTimer;
+        let isMenuOpen = false;
+
+        function openMenu() {
+            isMenuOpen = true;
+            themeMenu.classList.add('active');
+            // Vibrate if supported
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+
+        function closeMenu() {
+            isMenuOpen = false;
+            themeMenu.classList.remove('active');
+            themeOptions.forEach(opt => opt.classList.remove('hovered'));
+        }
+
+        function handleStart(e) {
+            // e.preventDefault(); // Don't prevent default, let click fire if short press
+            pressTimer = setTimeout(openMenu, 300);
+        }
+
+        function handleEnd(e) {
+            clearTimeout(pressTimer);
+            if (isMenuOpen) {
+                // If menu was open, check if we dropped on an option
+                const touch = e.changedTouches ? e.changedTouches[0] : e;
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                const option = target?.closest('.theme-option');
+
+                if (option) {
+                    const theme = option.getAttribute('data-theme');
+                    setTheme(theme);
+                }
+                closeMenu();
+                // Prevent click from firing toggle
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }
+
+        function handleMove(e) {
+            if (isMenuOpen) {
+                e.preventDefault(); // Prevent scrolling while dragging
+                const touch = e.touches ? e.touches[0] : e;
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                const option = target?.closest('.theme-option');
+
+                themeOptions.forEach(opt => opt.classList.remove('hovered'));
+                if (option) {
+                    option.classList.add('hovered');
+                }
+            } else {
+                // If moved significantly before timer fires, cancel timer (optional, but good for scroll)
+                // For now, let's keep it simple.
+            }
+        }
+
+        themeBtn.addEventListener('mousedown', handleStart);
+        themeBtn.addEventListener('touchstart', handleStart, { passive: false });
+
+        window.addEventListener('mouseup', handleEnd);
+        window.addEventListener('touchend', handleEnd, { passive: false });
+
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchmove', handleMove, { passive: false });
+
+        // Click Handler (Short Press)
+        themeBtn.onclick = function (e) {
+            if (!isMenuOpen) {
+                toggleTheme();
+            }
+        };
+
+        function setTheme(theme) {
+            const body = document.body;
+            body.setAttribute('data-theme', theme);
+            currentTheme = theme;
+            if (theme === 'light') body.removeAttribute('data-theme');
+
+            // Update Map
+            if (map) {
+                let tileUrl = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+                if (currentTheme === 'dark') tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+
+                map.eachLayer(function (layer) {
+                    if (layer instanceof L.TileLayer) map.removeLayer(layer);
+                });
+                L.tileLayer(tileUrl, { attribution: '&copy; CARTO', subdomains: 'abcd', maxZoom: 19 }).addTo(map);
+            }
+        }
+
+    </script>
+</body>
+
+</html>
