@@ -801,6 +801,135 @@
             overflow: hidden;
         }
 
+        /* --- PASSWORD OVERLAY --- */
+        #password-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        [data-theme="dark"] #password-overlay {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .password-container {
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: var(--shadow-hover);
+            text-align: center;
+            max-width: 320px;
+            width: 90%;
+            border: 1px solid var(--border);
+            transform: scale(1);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .password-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--accent);
+            margin: 0 auto 20px;
+        }
+
+        .password-container h2 {
+            margin: 0 0 8px;
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .password-container p {
+            margin: 0 0 24px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        #password-input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        #password-input:focus {
+            border-color: var(--accent);
+        }
+
+        #password-submit {
+            width: 48px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+
+        #password-submit:active {
+            transform: scale(0.95);
+        }
+
+        .error-msg {
+            color: var(--alert-text);
+            font-size: 13px;
+            height: 20px;
+            font-weight: 600;
+        }
+
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes shake {
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0);
+            }
+        }
+
         .strategy-card::before {
             content: '';
             position: absolute;
@@ -980,6 +1109,20 @@
     <div id="view-checklist" class="view-container">
         <div class="checklist-container" id="checklist-content">
             <!-- JS Injected -->
+        </div>
+    </div>
+
+    <!-- Password Overlay -->
+    <div id="password-overlay">
+        <div class="password-container">
+            <div class="password-icon"><i class="fas fa-lock"></i></div>
+            <h2>TOKYO 2026</h2>
+            <p>請輸入密碼以查看行程</p>
+            <div class="input-group">
+                <input type="password" id="password-input" placeholder="請輸入密碼" maxlength="10">
+                <button id="password-submit"><i class="fas fa-arrow-right"></i></button>
+            </div>
+            <div id="password-error" class="error-msg"></div>
         </div>
     </div>
 
@@ -1544,6 +1687,49 @@
                 setTimeout(() => { found.setIcon(originalIcon); }, 3000);
             }
         }
+
+        // --- PASSWORD PROTECTION ---
+        function checkPassword() {
+            const overlay = document.getElementById('password-overlay');
+            const input = document.getElementById('password-input');
+            const errorMsg = document.getElementById('password-error');
+            const container = document.querySelector('.password-container');
+
+            // Check Session
+            if (sessionStorage.getItem('is_authenticated') === 'true') {
+                overlay.style.display = 'none';
+                return;
+            }
+
+            function validate() {
+                if (input.value === '5201314') {
+                    sessionStorage.setItem('is_authenticated', 'true');
+                    overlay.style.opacity = '0';
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                    }, 500);
+                } else {
+                    errorMsg.textContent = '密碼錯誤';
+                    container.classList.remove('shake');
+                    void container.offsetWidth; // trigger reflow
+                    container.classList.add('shake');
+                    input.value = '';
+                    input.focus();
+                }
+            }
+
+            document.getElementById('password-submit').onclick = validate;
+
+            input.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') validate();
+            });
+
+            // Focus input on load
+            setTimeout(() => input.focus(), 100);
+        }
+
+        // Initialize Password Check
+        checkPassword();
 
         // Start
         init();
